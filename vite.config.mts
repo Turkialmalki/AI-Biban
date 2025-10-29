@@ -1,0 +1,78 @@
+// vite.config.mts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import fs from 'node:fs'
+import path from 'node:path'
+
+function uploadPlugin() {
+  return {
+    name: 'upload-middleware',
+    configureServer(server: any) {
+      console.log('[upload-middleware] mounted')
+
+      // GET /api/health
+      server.middlewares.use((req: any, res: any, next: any) => {
+        if (req.method === 'GET' && req.url === '/api/health') {
+          res.setHeader('Content-Type', 'application/json')
+          res.end('{"ok":true}')
+          return
+        }
+        next()
+      })
+
+      // POST /api/upload  (JSON {dataUrl} أو text/plain dataURL)
+      server.middlewares.use((req: any, res: any, next: any) => {
+        const url = req.url || ''
+        const isUpload = req.method === 'POST' && (url === '/api/upload' || url.startsWith('/api/upload?'))
+        if (!isUpload) return next()
+
+        let raw = ''
+        req.setEncoding('utf8')
+        req.on('data', (c: string) => {
+          raw += c
+          if (raw.length > 25 * 1024 * 1024) req.destroy() // 25MB
+        })
+        req.on('end', () => {
+          try {
+            let dataUrl: string | null = null
+            if (req.headers['content-type']?.includes('application/json')) {
+              const body = JSON.parse(raw || '{}')
+              dataUrl = body?.dataUrl ?? null
+            } else {
+              dataUrl = raw || null
+            }
+            if (!dataUrl || !dataUrl.includes(',')) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              return res.end('{"error":"Missing dataUrl"}')
+            }
+
+            const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1)
+            const buf = Buffer.from(b64, 'base64')
+
+            const dir = path.join(process.cwd(), 'public', 'snaps')
+            fs.mkdirSync(dir, { recursive: true })
+            const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+            fs.writeFileSync(path.join(dir, `${id}.jpg`), buf)
+
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ id, url: `/snaps/${id}.jpg` }))
+          } catch {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end('{"error":"server error"}')
+          }
+        })
+      })
+    }
+  }
+}
+
+export default defineConfig({
+  plugins: [react(), uploadPlugin()],
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+  },
+})
