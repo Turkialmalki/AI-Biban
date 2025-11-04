@@ -23,12 +23,12 @@ export default function App() {
           <div style={card}>
             <div style={{ display: "grid", gap: 12 }}>
               <div style={{ fontSize: 18, fontWeight: 900 }}>مرآة الذكاء</div>
-              <CameraMirror onEmotion={setEmotion} onSnapshot={setSnap} />
-              <SnapshotPanel snapDataUrl={snap} />
+              {/* <CameraMirror onEmotion={setEmotion} onSnapshot={setSnap} /> */}
+              {/* <SnapshotPanel snapDataUrl={snap} /> */}
               <div style={{ display: "flex", gap: 8 }}>
-                <button style={btnPrimary} onClick={() => setOpenWizard(true)}>
+                {/* <button style={btnPrimary} onClick={() => setOpenWizard(true)}>
                   ابدأ بتحديد شخصيتي
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -37,22 +37,22 @@ export default function App() {
           <div style={card}>
             <InteractiveCamera />
 
-            <TimeMachine />
+            {/* <TimeMachine /> */}
           </div>
 
           {/* المخطط المتقدم */}
           <div style={card}>
-            <AdvancedPlanner />
+            {/* <AdvancedPlanner /> */}
           </div>
         </div>
       </div>
 
       {/* مُعرّف الشخصية كنافذة وسط الشاشة */}
-      <PersonaWizard
+      {/* <PersonaWizard
         open={openWizard}
         onClose={() => setOpenWizard(false)}
         lastEmotion={emotion}
-      />
+      /> */}
     </PersonaProvider>
   );
 }

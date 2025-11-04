@@ -338,9 +338,9 @@ export default function AdvancedPlanner() {
                 ))}
               </ul>
               <div>
-                <div>
+                {/* <div>
                   إجمالي الأفراد: <b>{plan.headcountTotal}</b>
-                </div>
+                </div> */}
                 <div>
                   تكلفة شهرية تقديرية: <b>${format(plan.monthlyBurnUSD)}</b>
                 </div>
